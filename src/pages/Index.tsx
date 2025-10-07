@@ -1,13 +1,28 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useState } from "react";
+import { Hero } from "@/components/Hero";
+import { CreateCapsule } from "@/components/CreateCapsule";
+import { ViewCapsules } from "@/components/ViewCapsules";
+
+type View = "hero" | "create" | "view";
 
 const Index = () => {
+  const [currentView, setCurrentView] = useState<View>("hero");
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="mb-4 text-4xl font-bold">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <>
+      {currentView === "hero" && (
+        <Hero
+          onCreateCapsule={() => setCurrentView("create")}
+          onViewCapsules={() => setCurrentView("view")}
+        />
+      )}
+      {currentView === "create" && (
+        <CreateCapsule onBack={() => setCurrentView("hero")} />
+      )}
+      {currentView === "view" && (
+        <ViewCapsules onBack={() => setCurrentView("hero")} />
+      )}
+    </>
   );
 };
 
