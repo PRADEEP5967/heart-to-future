@@ -1,26 +1,44 @@
-import { useState } from "react";
-import { Hero } from "@/components/Hero";
+import { useState, useEffect } from "react";
+import { Auth } from "@/components/Auth";
+import { Dashboard } from "@/components/Dashboard";
 import { CreateCapsule } from "@/components/CreateCapsule";
-import { ViewCapsules } from "@/components/ViewCapsules";
+import { auth } from "@/lib/auth";
 
-type View = "hero" | "create" | "view";
+type View = "dashboard" | "create";
 
 const Index = () => {
-  const [currentView, setCurrentView] = useState<View>("hero");
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentView, setCurrentView] = useState<View>("dashboard");
+
+  useEffect(() => {
+    const user = auth.getUser();
+    setIsAuthenticated(!!user);
+  }, []);
+
+  const handleAuthSuccess = () => {
+    setIsAuthenticated(true);
+  };
+
+  const handleLogout = () => {
+    auth.logout();
+    setIsAuthenticated(false);
+    setCurrentView("dashboard");
+  };
+
+  if (!isAuthenticated) {
+    return <Auth onAuthSuccess={handleAuthSuccess} />;
+  }
 
   return (
     <>
-      {currentView === "hero" && (
-        <Hero
+      {currentView === "dashboard" && (
+        <Dashboard
           onCreateCapsule={() => setCurrentView("create")}
-          onViewCapsules={() => setCurrentView("view")}
+          onLogout={handleLogout}
         />
       )}
       {currentView === "create" && (
-        <CreateCapsule onBack={() => setCurrentView("hero")} />
-      )}
-      {currentView === "view" && (
-        <ViewCapsules onBack={() => setCurrentView("hero")} />
+        <CreateCapsule onBack={() => setCurrentView("dashboard")} />
       )}
     </>
   );
