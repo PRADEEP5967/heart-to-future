@@ -4,20 +4,12 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import {
-  Lock,
-  LockOpen,
-  Plus,
-  LogOut,
-  User,
-  Calendar,
-  Target,
-  FileText,
-  Mic,
-  Sparkles,
-} from "lucide-react";
+import { Sparkles, Plus, LogOut, Calendar, Target, Lock, Unlock, User, Settings, Mic } from "lucide-react";
 import { auth, User as AuthUser } from "@/lib/auth";
-import { useToast } from "@/hooks/use-toast";
+import { ThemeToggle } from "./ThemeToggle";
+import { ViewCapsule } from "./ViewCapsule";
+import { Profile } from "./Profile";
+import { MemoryBubbles } from "./MemoryBubbles";
 
 interface Capsule {
   id: string;
@@ -36,7 +28,6 @@ interface Goal {
   capsuleId: string;
   title: string;
   completed: boolean;
-  completedAt?: string;
 }
 
 interface DashboardProps {
@@ -47,145 +38,109 @@ interface DashboardProps {
 export const Dashboard = ({ onCreateCapsule, onLogout }: DashboardProps) => {
   const [capsules, setCapsules] = useState<Capsule[]>([]);
   const [selectedCapsule, setSelectedCapsule] = useState<Capsule | null>(null);
-  const [goals, setGoals] = useState<Goal[]>([]);
+  const [showProfile, setShowProfile] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
-  const { toast } = useToast();
 
   useEffect(() => {
     const currentUser = auth.getUser();
     setUser(currentUser);
-    loadCapsules(currentUser?.id);
+    if (currentUser) {
+      const allCapsules = JSON.parse(localStorage.getItem("capsules") || "[]");
+      const userCapsules = allCapsules.filter((c: Capsule) => c.userId === currentUser.id);
+      setCapsules(userCapsules);
+    }
   }, []);
 
-  const loadCapsules = (userId?: string) => {
-    if (!userId) return;
-    const allCapsules = JSON.parse(localStorage.getItem("capsules") || "[]");
-    const userCapsules = allCapsules.filter((c: Capsule) => c.userId === userId);
-    setCapsules(userCapsules);
-
-    const allGoals = JSON.parse(localStorage.getItem("goals") || "[]");
-    setGoals(allGoals);
-  };
-
-  const canOpen = (capsule: Capsule) => {
-    return new Date(capsule.openDate) <= new Date();
-  };
-
-  const handleOpenCapsule = (capsule: Capsule) => {
-    if (!canOpen(capsule)) {
-      const daysLeft = Math.ceil(
-        (new Date(capsule.openDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-      );
-      toast({
-        title: "Not yet! 🔒",
-        description: `This capsule opens in ${daysLeft} days.`,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const updatedCapsules = capsules.map((c) =>
+  const openCapsule = (capsule: Capsule) => {
+    const updatedCapsules = capsules.map(c => 
       c.id === capsule.id ? { ...c, status: "opened" as const } : c
     );
+    localStorage.setItem("capsules", JSON.stringify(updatedCapsules));
     setCapsules(updatedCapsules);
-
-    const allCapsules = JSON.parse(localStorage.getItem("capsules") || "[]");
-    const globalUpdated = allCapsules.map((c: Capsule) =>
-      c.id === capsule.id ? { ...c, status: "opened" } : c
-    );
-    localStorage.setItem("capsules", JSON.stringify(globalUpdated));
-
     setSelectedCapsule({ ...capsule, status: "opened" });
-
-    toast({
-      title: "✨ Time Capsule Opened!",
-      description: "Here's your message from the past.",
-    });
   };
 
-  const activeCapsules = capsules.filter((c) => c.status === "sealed");
-  const openedCapsules = capsules.filter((c) => c.status === "opened");
+  const activeCapsules = capsules.filter(c => c.status === "sealed");
+  const openedCapsules = capsules.filter(c => c.status === "opened");
+  const drafts = JSON.parse(localStorage.getItem("capsule-draft") || "null");
 
-  const getCapsuleGoals = (capsuleId: string) => {
-    return goals.filter((g) => g.capsuleId === capsuleId);
-  };
+  const allGoals = JSON.parse(localStorage.getItem("goals") || "[]");
+  const userGoals = allGoals.filter((g: any) => 
+    capsules.some(c => c.id === g.capsuleId)
+  );
+  const completedGoals = userGoals.filter((g: any) => g.completed).length;
+  const totalGoals = userGoals.length;
+  const goalsProgress = totalGoals > 0 ? (completedGoals / totalGoals) * 100 : 0;
 
-  const completedGoalsCount = goals.filter((g) => g.completed).length;
-  const totalGoalsCount = goals.length;
-  const goalsProgress = totalGoalsCount > 0 ? (completedGoalsCount / totalGoalsCount) * 100 : 0;
+  if (selectedCapsule) {
+    return <ViewCapsule capsule={selectedCapsule} onBack={() => setSelectedCapsule(null)} />;
+  }
 
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
-  };
-
-  const daysUntil = (dateStr: string) => {
-    const days = Math.ceil((new Date(dateStr).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-    return days;
-  };
+  if (showProfile) {
+    return <Profile onBack={() => setShowProfile(false)} />;
+  }
 
   return (
-    <div className="min-h-screen gradient-warm">
-      {/* Header */}
-      <header className="border-b bg-card/50 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+    <div className="min-h-screen gradient-warm relative overflow-hidden">
+      <MemoryBubbles />
+      
+      <div className="max-w-6xl mx-auto space-y-8 animate-fade-in relative z-10 px-4 py-12">
+        {/* Header */}
+        <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gradient flex items-center gap-2">
-              <Sparkles className="w-6 h-6" />
+            <h1 className="text-5xl font-bold text-gradient mb-2 flex items-center gap-3">
+              <Sparkles className="w-12 h-12" />
               Dear Future Me
             </h1>
-            <p className="text-sm text-muted-foreground">
-              Hi {user?.displayName}, you have {activeCapsules.length} memories waiting 🌠
+            <p className="text-xl text-muted-foreground font-handwritten">
+              Hi {user?.displayName}, you have {activeCapsules.length} {activeCapsules.length === 1 ? 'memory' : 'memories'} waiting for {new Date().getFullYear() + 1} 🌠
             </p>
           </div>
-          <div className="flex items-center gap-3">
-            <Button variant="outline" size="icon">
-              <User className="w-4 h-4" />
+          <div className="flex gap-2">
+            <ThemeToggle />
+            <Button variant="outline" size="icon" onClick={() => setShowProfile(true)}>
+              <User className="w-5 h-5" />
             </Button>
-            <Button variant="ghost" size="icon" onClick={onLogout}>
-              <LogOut className="w-4 h-4" />
+            <Button variant="outline" onClick={onLogout}>
+              <LogOut className="w-4 h-4 mr-2" />
+              Logout
             </Button>
           </div>
         </div>
-      </header>
 
-      <div className="max-w-6xl mx-auto px-4 py-8 space-y-6">
-        {/* Stats Cards */}
+        {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="p-6 shadow-card border-2">
+          <Card className="p-6 shadow-card gradient-card border-2">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-primary/10">
+              <div className="p-3 rounded-full bg-primary/20">
                 <Lock className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{activeCapsules.length}</p>
-                <p className="text-sm text-muted-foreground">Active Capsules</p>
+                <p className="text-3xl font-bold">{activeCapsules.length}</p>
+                <p className="text-sm text-muted-foreground">Sealed Capsules</p>
               </div>
             </div>
           </Card>
 
-          <Card className="p-6 shadow-card border-2">
+          <Card className="p-6 shadow-card gradient-card border-2">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-secondary/10">
-                <LockOpen className="w-6 h-6 text-secondary" />
+              <div className="p-3 rounded-full bg-accent/20">
+                <Unlock className="w-6 h-6 text-accent" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{openedCapsules.length}</p>
+                <p className="text-3xl font-bold">{openedCapsules.length}</p>
                 <p className="text-sm text-muted-foreground">Opened Capsules</p>
               </div>
             </div>
           </Card>
 
-          <Card className="p-6 shadow-card border-2">
+          <Card className="p-6 shadow-card gradient-card border-2">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-accent/10">
-                <Target className="w-6 h-6 text-accent-foreground" />
+              <div className="p-3 rounded-full bg-secondary/20">
+                <Target className="w-6 h-6 text-primary" />
               </div>
               <div className="flex-1">
-                <p className="text-2xl font-bold">{completedGoalsCount}/{totalGoalsCount}</p>
+                <p className="text-3xl font-bold">{completedGoals}/{totalGoals}</p>
                 <p className="text-sm text-muted-foreground mb-2">Goals Achieved</p>
                 <Progress value={goalsProgress} className="h-2" />
               </div>
@@ -197,151 +152,124 @@ export const Dashboard = ({ onCreateCapsule, onLogout }: DashboardProps) => {
         <Button
           onClick={onCreateCapsule}
           size="lg"
-          className="w-full md:w-auto text-lg py-6 px-8 rounded-full shadow-soft transition-smooth hover:scale-105"
+          className="w-full text-lg py-6 rounded-full shadow-soft transition-smooth hover:scale-105"
         >
           <Plus className="w-5 h-5 mr-2" />
           Create New Time Capsule
         </Button>
 
-        {/* Capsules Tabs */}
+        {/* Tabs */}
         <Tabs defaultValue="active" className="w-full">
-          <TabsList className="grid w-full max-w-md grid-cols-2">
-            <TabsTrigger value="active">
-              <Lock className="w-4 h-4 mr-2" />
-              Active ({activeCapsules.length})
-            </TabsTrigger>
-            <TabsTrigger value="opened">
-              <LockOpen className="w-4 h-4 mr-2" />
-              Opened ({openedCapsules.length})
-            </TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3 mb-6">
+            <TabsTrigger value="active">Active</TabsTrigger>
+            <TabsTrigger value="opened">Delivered</TabsTrigger>
+            <TabsTrigger value="drafts">Drafts</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="active" className="mt-6 space-y-4">
-            {activeCapsules.length === 0 ? (
-              <Card className="p-12 text-center shadow-card border-2">
-                <Lock className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-xl font-semibold mb-2">No active capsules</h3>
-                <p className="text-muted-foreground">
-                  Create your first time capsule to get started!
-                </p>
-              </Card>
-            ) : (
-              activeCapsules.map((capsule) => (
-                <Card
-                  key={capsule.id}
-                  className="p-6 shadow-card border-2 hover:shadow-soft transition-smooth cursor-pointer"
-                  onClick={() => handleOpenCapsule(capsule)}
-                >
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-xl font-semibold">{capsule.title}</h3>
-                        {capsule.isGoal && (
-                          <Badge variant="secondary">
-                            <Target className="w-3 h-3 mr-1" />
-                            Goals
-                          </Badge>
-                        )}
-                        {capsule.voiceNote && (
-                          <Badge variant="outline">
-                            <Mic className="w-3 h-3 mr-1" />
-                            Voice
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Calendar className="w-4 h-4" />
-                          Opens {formatDate(capsule.openDate)}
-                        </span>
-                        {canOpen(capsule) ? (
-                          <Badge className="bg-green-500">Ready to Open!</Badge>
+          <TabsContent value="active">
+            <Card className="p-6 shadow-card gradient-card border-2">
+              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <Lock className="w-6 h-6 text-primary" />
+                Sealed Capsules
+              </h2>
+              {activeCapsules.length === 0 ? (
+                <p className="text-muted-foreground">No active capsules. Create your first one!</p>
+              ) : (
+                <div className="grid gap-4">
+                  {activeCapsules.map((capsule) => {
+                    const isLocked = new Date(capsule.openDate) > new Date();
+                    return (
+                      <div
+                        key={capsule.id}
+                        className="p-5 bg-muted/20 rounded-lg border-2 flex justify-between items-center transition-smooth hover:shadow-card"
+                      >
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h3 className="text-lg font-semibold">{capsule.title}</h3>
+                            {capsule.isGoal && (
+                              <Badge variant="secondary" className="text-xs">
+                                <Target className="w-3 h-3 mr-1" />
+                                Goals
+                              </Badge>
+                            )}
+                            {capsule.voiceNote && (
+                              <Badge variant="outline" className="text-xs">
+                                <Mic className="w-3 h-3 mr-1" />
+                                Voice
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
+                            <Calendar className="w-4 h-4" />
+                            Opens on {new Date(capsule.openDate).toLocaleDateString()}
+                          </p>
+                        </div>
+                        {isLocked ? (
+                          <div className="flex items-center gap-2 text-muted-foreground">
+                            <Lock className="w-5 h-5" />
+                            <span className="text-sm">Locked</span>
+                          </div>
                         ) : (
-                          <span>{daysUntil(capsule.openDate)} days remaining</span>
+                          <Button onClick={() => openCapsule(capsule)} className="shadow-soft">
+                            <Unlock className="w-4 h-4 mr-2" />
+                            Open Now
+                          </Button>
                         )}
                       </div>
-                    </div>
-                    <div className="p-3 rounded-full bg-primary/10">
-                      <Lock className="w-6 h-6 text-primary" />
-                    </div>
-                  </div>
-                </Card>
-              ))
-            )}
+                    );
+                  })}
+                </div>
+              )}
+            </Card>
           </TabsContent>
 
-          <TabsContent value="opened" className="mt-6 space-y-4">
-            {openedCapsules.length === 0 ? (
-              <Card className="p-12 text-center shadow-card border-2">
-                <LockOpen className="w-16 h-16 mx-auto mb-4 text-muted-foreground opacity-50" />
-                <h3 className="text-xl font-semibold mb-2">No opened capsules yet</h3>
-                <p className="text-muted-foreground">
-                  Your memories are waiting to be unlocked!
-                </p>
-              </Card>
-            ) : (
-              openedCapsules.map((capsule) => {
-                const capsuleGoals = getCapsuleGoals(capsule.id);
-                return (
-                  <Card
-                    key={capsule.id}
-                    className="p-6 shadow-card border-2 hover:shadow-soft transition-smooth"
-                  >
-                    <div className="space-y-4">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <h3 className="text-xl font-semibold mb-2">{capsule.title}</h3>
-                          <p className="text-sm text-muted-foreground flex items-center gap-1">
-                            <Calendar className="w-4 h-4" />
-                            Opened on {formatDate(capsule.openDate)}
-                          </p>
-                        </div>
-                        <LockOpen className="w-6 h-6 text-secondary" />
-                      </div>
-
-                      <div className="prose prose-sm max-w-none">
-                        <p className="whitespace-pre-wrap font-serif leading-relaxed">
-                          {capsule.message}
-                        </p>
-                      </div>
-
-                      {capsule.voiceNote && (
-                        <div className="p-4 bg-muted/30 rounded-lg">
-                          <p className="text-sm font-medium mb-2 flex items-center gap-2">
-                            <Mic className="w-4 h-4" />
-                            Voice Note
-                          </p>
-                          <audio controls className="w-full" src={capsule.voiceNote} />
-                        </div>
-                      )}
-
-                      {capsuleGoals.length > 0 && (
-                        <div className="space-y-2">
-                          <p className="text-sm font-semibold flex items-center gap-2">
-                            <Target className="w-4 h-4" />
-                            Goals ({capsuleGoals.filter(g => g.completed).length}/{capsuleGoals.length} completed)
-                          </p>
-                          <div className="space-y-2">
-                            {capsuleGoals.map((goal) => (
-                              <div
-                                key={goal.id}
-                                className={`p-3 rounded-lg border ${
-                                  goal.completed ? "bg-green-50 border-green-200" : "bg-muted/30"
-                                }`}
-                              >
-                                <p className={goal.completed ? "line-through text-muted-foreground" : ""}>
-                                  {goal.title}
-                                </p>
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
+          <TabsContent value="opened">
+            <Card className="p-6 shadow-card gradient-card border-2">
+              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <Unlock className="w-6 h-6 text-accent" />
+                Opened Capsules
+              </h2>
+              {openedCapsules.length === 0 ? (
+                <p className="text-muted-foreground">No opened capsules yet.</p>
+              ) : (
+                <div className="grid gap-4">
+                  {openedCapsules.map((capsule) => (
+                    <div
+                      key={capsule.id}
+                      className="p-5 bg-muted/20 rounded-lg border-2 cursor-pointer transition-smooth hover:shadow-card"
+                      onClick={() => setSelectedCapsule(capsule)}
+                    >
+                      <h3 className="text-lg font-semibold">{capsule.title}</h3>
+                      <p className="text-sm text-muted-foreground mt-1">
+                        Opened from {new Date(capsule.openDate).toLocaleDateString()}
+                      </p>
                     </div>
-                  </Card>
-                );
-              })
-            )}
+                  ))}
+                </div>
+              )}
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="drafts">
+            <Card className="p-6 shadow-card gradient-card border-2">
+              <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
+                <Settings className="w-6 h-6 text-muted-foreground" />
+                Your Drafts
+              </h2>
+              {!drafts || !drafts.title ? (
+                <p className="text-muted-foreground">No drafts saved.</p>
+              ) : (
+                <div className="p-5 bg-muted/20 rounded-lg border-2">
+                  <h3 className="text-lg font-semibold">{drafts.title || "Untitled Draft"}</h3>
+                  <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+                    {drafts.message?.substring(0, 100)}...
+                  </p>
+                  <Button onClick={onCreateCapsule} className="mt-4">
+                    Continue Editing
+                  </Button>
+                </div>
+              )}
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

@@ -9,6 +9,8 @@ import { ArrowLeft, Send, Mic, MicOff, Plus, X, Target, Sparkles } from "lucide-
 import { useToast } from "@/hooks/use-toast";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { auth } from "@/lib/auth";
+import { encryptData } from "@/lib/encryption";
+import { TypeAnimation } from 'react-type-animation';
 
 interface CreateCapsuleProps {
   onBack: () => void;
@@ -108,6 +110,7 @@ export const CreateCapsule = ({ onBack }: CreateCapsuleProps) => {
       ...capsule,
       id: capsuleId,
       userId: user.id,
+      message: encryptData(capsule.message),
       voiceNote: audioURL,
       createdAt: new Date().toISOString(),
       status: "sealed",
@@ -188,15 +191,28 @@ export const CreateCapsule = ({ onBack }: CreateCapsuleProps) => {
               <Label htmlFor="message" className="text-base font-semibold">
                 Your message
               </Label>
+              {!capsule.message && (
+                <div className="mb-2 text-muted-foreground font-handwritten text-lg">
+                  <TypeAnimation
+                    sequence={[
+                      'Dear Future Me,\n\nI hope when you read this...',
+                      1000,
+                    ]}
+                    wrapper="div"
+                    speed={50}
+                    style={{ whiteSpace: 'pre-line' }}
+                  />
+                </div>
+              )}
               <Textarea
                 id="message"
                 placeholder="Dear Future Me,&#10;&#10;I hope when you read this..."
                 value={capsule.message}
                 onChange={(e) => setCapsule({ ...capsule, message: e.target.value })}
-                className="min-h-[300px] text-base leading-relaxed border-2 focus:ring-2 focus:ring-primary/20 font-serif"
+                className="min-h-[300px] text-base leading-relaxed border-2 focus:ring-2 focus:ring-primary/20 font-handwritten"
               />
               <p className="text-sm text-muted-foreground">
-                {capsule.message.length} characters · Auto-saving...
+                {capsule.message.length} characters · Auto-saving... 🔒 Encrypted
               </p>
             </div>
 
