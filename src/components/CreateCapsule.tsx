@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Send, Mic, MicOff, Plus, X, Target, Sparkles } from "lucide-react";
+import { ArrowLeft, Send, Mic, MicOff, Plus, X, Target, Sparkles, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { auth } from "@/lib/auth";
@@ -38,6 +38,7 @@ export const CreateCapsule = ({ onBack }: CreateCapsuleProps) => {
   });
   const [goals, setGoals] = useState<Goal[]>([]);
   const [newGoalTitle, setNewGoalTitle] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
   const {
     isRecording,
@@ -48,6 +49,9 @@ export const CreateCapsule = ({ onBack }: CreateCapsuleProps) => {
     clearRecording,
     formatTime,
   } = useAudioRecorder();
+
+  const maxTitleLength = 100;
+  const maxMessageLength = 5000;
 
   // Auto-save to localStorage
   useEffect(() => {
@@ -83,11 +87,29 @@ export const CreateCapsule = ({ onBack }: CreateCapsuleProps) => {
     setGoals(goals.filter((g) => g.id !== id));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!capsule.title || !capsule.message || !capsule.openDate) {
       toast({
         title: "Missing information",
         description: "Please fill in all fields before saving.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (capsule.title.length > maxTitleLength) {
+      toast({
+        title: "Title too long",
+        description: `Title must be ${maxTitleLength} characters or less.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (capsule.message.length > maxMessageLength) {
+      toast({
+        title: "Message too long",
+        description: `Message must be ${maxMessageLength} characters or less.`,
         variant: "destructive",
       });
       return;
@@ -103,47 +125,58 @@ export const CreateCapsule = ({ onBack }: CreateCapsuleProps) => {
       return;
     }
 
-    const capsules = JSON.parse(localStorage.getItem("capsules") || "[]");
-    const capsuleId = Date.now().toString();
-    
-    const newCapsule = {
-      ...capsule,
-      id: capsuleId,
-      userId: user.id,
-      message: encryptData(capsule.message),
-      voiceNote: audioURL,
-      createdAt: new Date().toISOString(),
-      status: "sealed",
-    };
-    
-    capsules.push(newCapsule);
-    localStorage.setItem("capsules", JSON.stringify(capsules));
+    setIsSaving(true);
 
-    // Save goals if this is a goal capsule
-    if (capsule.isGoal && goals.length > 0) {
-      const existingGoals = JSON.parse(localStorage.getItem("goals") || "[]");
-      const newGoals = goals.map((g) => ({
-        id: g.id,
-        capsuleId,
+    try {
+      const capsules = JSON.parse(localStorage.getItem("capsules") || "[]");
+      const capsuleId = Date.now().toString();
+      
+      const newCapsule = {
+        ...capsule,
+        id: capsuleId,
         userId: user.id,
-        title: g.title,
-        completed: false,
-      }));
-      existingGoals.push(...newGoals);
-      localStorage.setItem("goals", JSON.stringify(existingGoals));
+        message: encryptData(capsule.message),
+        voiceNote: audioURL,
+        createdAt: new Date().toISOString(),
+        status: "sealed",
+      };
+      
+      capsules.push(newCapsule);
+      localStorage.setItem("capsules", JSON.stringify(capsules));
+
+      if (capsule.isGoal && goals.length > 0) {
+        const existingGoals = JSON.parse(localStorage.getItem("goals") || "[]");
+        const newGoals = goals.map((g) => ({
+          id: g.id,
+          capsuleId,
+          userId: user.id,
+          title: g.title,
+          completed: false,
+        }));
+        existingGoals.push(...newGoals);
+        localStorage.setItem("goals", JSON.stringify(existingGoals));
+      }
+
+      localStorage.removeItem("capsule-draft");
+
+      toast({
+        title: "Time capsule created! 🎉",
+        description: `Your message will be unlocked on ${new Date(capsule.openDate).toLocaleDateString()}.`,
+      });
+
+      setCapsule({ title: "", message: "", openDate: "", isGoal: false });
+      setGoals([]);
+      clearRecording();
+      onBack();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save time capsule. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSaving(false);
     }
-
-    localStorage.removeItem("capsule-draft");
-
-    toast({
-      title: "Time capsule created! 🎉",
-      description: `Your message will be unlocked on ${new Date(capsule.openDate).toLocaleDateString()}.`,
-    });
-
-    setCapsule({ title: "", message: "", openDate: "", isGoal: false });
-    setGoals([]);
-    clearRecording();
-    onBack();
   };
 
   const minDate = new Date();
@@ -182,9 +215,17 @@ export const CreateCapsule = ({ onBack }: CreateCapsuleProps) => {
                 id="title"
                 placeholder="e.g., My Dreams for 2026, A Letter to Future Me"
                 value={capsule.title}
-                onChange={(e) => setCapsule({ ...capsule, title: e.target.value })}
+                onChange={(e) => {
+                  if (e.target.value.length <= maxTitleLength) {
+                    setCapsule({ ...capsule, title: e.target.value });
+                  }
+                }}
                 className="text-lg border-2 focus:ring-2 focus:ring-primary/20"
+                maxLength={maxTitleLength}
               />
+              <p className="text-xs text-muted-foreground">
+                {capsule.title.length}/{maxTitleLength} characters
+              </p>
             </div>
 
             <div className="space-y-2">
@@ -208,11 +249,16 @@ export const CreateCapsule = ({ onBack }: CreateCapsuleProps) => {
                 id="message"
                 placeholder="Dear Future Me,&#10;&#10;I hope when you read this..."
                 value={capsule.message}
-                onChange={(e) => setCapsule({ ...capsule, message: e.target.value })}
+                onChange={(e) => {
+                  if (e.target.value.length <= maxMessageLength) {
+                    setCapsule({ ...capsule, message: e.target.value });
+                  }
+                }}
                 className="min-h-[300px] text-base leading-relaxed border-2 focus:ring-2 focus:ring-primary/20 font-handwritten"
+                maxLength={maxMessageLength}
               />
               <p className="text-sm text-muted-foreground">
-                {capsule.message.length} characters · Auto-saving... 🔒 Encrypted
+                {capsule.message.length}/{maxMessageLength} characters · Auto-saving... 🔒 Encrypted
               </p>
             </div>
 
@@ -341,9 +387,19 @@ export const CreateCapsule = ({ onBack }: CreateCapsuleProps) => {
                 onClick={handleSave}
                 size="lg"
                 className="flex-1 text-lg py-6 rounded-full shadow-soft transition-smooth hover:scale-105"
+                disabled={isSaving || !capsule.title || !capsule.message || !capsule.openDate}
               >
-                <Send className="w-5 h-5 mr-2" />
-                Seal Time Capsule
+                {isSaving ? (
+                  <>
+                    <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                    Sealing...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-5 h-5 mr-2" />
+                    Seal Time Capsule
+                  </>
+                )}
               </Button>
             </div>
           </div>

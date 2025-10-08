@@ -1,81 +1,102 @@
 import { Button } from "@/components/ui/button";
-import { Mail, Clock, Heart } from "lucide-react";
+import { Sparkles, Mail, Clock, Heart, Shield } from "lucide-react";
+import { MemoryBubbles } from "./MemoryBubbles";
 
 interface HeroProps {
-  onCreateCapsule: () => void;
-  onViewCapsules: () => void;
+  onGetStarted: () => void;
 }
 
-export const Hero = ({ onCreateCapsule, onViewCapsules }: HeroProps) => {
+export const Hero = ({ onGetStarted }: HeroProps) => {
   return (
-    <div className="min-h-screen gradient-warm flex items-center justify-center px-4 py-20">
-      <div className="max-w-4xl mx-auto text-center space-y-8 animate-fade-in">
-        <div className="inline-block">
-          <div className="p-4 rounded-full bg-primary/10 mb-6 inline-block animate-float">
-            <Mail className="w-12 h-12 text-primary" />
+    <div className="min-h-screen gradient-warm relative overflow-hidden">
+      <MemoryBubbles />
+      
+      <div className="relative z-10 max-w-6xl mx-auto px-4 py-20">
+        {/* Hero Section */}
+        <div className="text-center space-y-8 mb-20 animate-fade-in">
+          <div className="flex justify-center mb-6">
+            <div className="p-6 bg-primary/10 rounded-full animate-float">
+              <Sparkles className="w-20 h-20 text-primary" />
+            </div>
           </div>
-        </div>
-        
-        <h1 className="text-5xl md:text-7xl font-bold text-gradient leading-tight">
-          Dear Future Me
-        </h1>
-        
-        <p className="text-xl md:text-2xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          Write a letter to your future self. Set your hopes, dreams, and goals in a digital time capsule, 
-          and open it when the moment arrives.
-        </p>
-
-        <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-8">
-          <Button 
-            onClick={onCreateCapsule}
-            size="lg" 
-            className="text-lg px-8 py-6 rounded-full shadow-soft transition-smooth hover:scale-105"
-          >
-            <Heart className="w-5 h-5 mr-2" />
-            Create Your Time Capsule
-          </Button>
           
-          <Button 
-            variant="outline" 
+          <h1 className="text-6xl md:text-7xl font-bold text-gradient mb-6">
+            Dear Future Me
+          </h1>
+          
+          <p className="text-2xl md:text-3xl text-muted-foreground font-handwritten max-w-3xl mx-auto">
+            Send messages through time to your future self. Set goals, record memories, and discover who you'll become.
+          </p>
+          
+          <Button
+            onClick={onGetStarted}
             size="lg"
-            onClick={onViewCapsules}
-            className="text-lg px-8 py-6 rounded-full border-2 transition-smooth hover:scale-105"
+            className="text-xl py-8 px-12 rounded-full shadow-soft transition-smooth hover:scale-105 mt-8"
           >
-            <Clock className="w-5 h-5 mr-2" />
-            View My Capsules
+            <Sparkles className="w-6 h-6 mr-3" />
+            Start Your Journey
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 pt-16 max-w-3xl mx-auto">
-          <div className="space-y-3 animate-fade-in-up" style={{ animationDelay: "0.1s" }}>
-            <div className="w-12 h-12 rounded-full bg-primary/20 flex items-center justify-center mx-auto">
-              <Mail className="w-6 h-6 text-primary" />
+        {/* Features Grid */}
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-20">
+          <div className="p-6 bg-card/80 backdrop-blur rounded-2xl border-2 shadow-card transition-smooth hover:shadow-soft hover:scale-105">
+            <div className="p-3 bg-primary/10 rounded-full w-fit mb-4">
+              <Mail className="w-8 h-8 text-primary" />
             </div>
-            <h3 className="font-semibold text-lg">Write Your Heart</h3>
-            <p className="text-sm text-muted-foreground">
-              Pour your thoughts, dreams, and feelings into a letter
+            <h3 className="text-xl font-bold mb-2">Write Letters</h3>
+            <p className="text-muted-foreground">
+              Pen heartfelt messages to your future self with our beautiful editor.
             </p>
           </div>
 
-          <div className="space-y-3 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
-            <div className="w-12 h-12 rounded-full bg-secondary/20 flex items-center justify-center mx-auto">
-              <Clock className="w-6 h-6 text-secondary" />
+          <div className="p-6 bg-card/80 backdrop-blur rounded-2xl border-2 shadow-card transition-smooth hover:shadow-soft hover:scale-105">
+            <div className="p-3 bg-accent/10 rounded-full w-fit mb-4">
+              <Clock className="w-8 h-8 text-accent" />
             </div>
-            <h3 className="font-semibold text-lg">Choose When</h3>
-            <p className="text-sm text-muted-foreground">
-              Pick a future date to unlock your memories
+            <h3 className="text-xl font-bold mb-2">Time Lock</h3>
+            <p className="text-muted-foreground">
+              Set when your capsule opens - 1 month, 1 year, or even 10 years from now.
             </p>
           </div>
 
-          <div className="space-y-3 animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
-            <div className="w-12 h-12 rounded-full bg-accent/20 flex items-center justify-center mx-auto">
-              <Heart className="w-6 h-6 text-accent-foreground" />
+          <div className="p-6 bg-card/80 backdrop-blur rounded-2xl border-2 shadow-card transition-smooth hover:shadow-soft hover:scale-105">
+            <div className="p-3 bg-secondary/10 rounded-full w-fit mb-4">
+              <Heart className="w-8 h-8 text-primary" />
             </div>
-            <h3 className="font-semibold text-lg">Rediscover Joy</h3>
-            <p className="text-sm text-muted-foreground">
-              Open your capsule and reflect on your journey
+            <h3 className="text-xl font-bold mb-2">Voice Notes</h3>
+            <p className="text-muted-foreground">
+              Record voice messages to hear your past self speak to you.
             </p>
           </div>
+
+          <div className="p-6 bg-card/80 backdrop-blur rounded-2xl border-2 shadow-card transition-smooth hover:shadow-soft hover:scale-105">
+            <div className="p-3 bg-primary/10 rounded-full w-fit mb-4">
+              <Shield className="w-8 h-8 text-primary" />
+            </div>
+            <h3 className="text-xl font-bold mb-2">Private & Secure</h3>
+            <p className="text-muted-foreground">
+              Your messages are encrypted and only you can read them.
+            </p>
+          </div>
+        </div>
+
+        {/* CTA Section */}
+        <div className="mt-20 text-center p-12 bg-card/80 backdrop-blur rounded-3xl border-2 shadow-card">
+          <h2 className="text-4xl font-bold text-gradient mb-4">
+            What will you tell your future self?
+          </h2>
+          <p className="text-xl text-muted-foreground mb-8 font-handwritten">
+            Your story is still being written. Start your first time capsule today.
+          </p>
+          <Button
+            onClick={onGetStarted}
+            size="lg"
+            className="text-lg py-6 px-10 rounded-full shadow-soft transition-smooth hover:scale-105"
+          >
+            <Sparkles className="w-5 h-5 mr-2" />
+            Get Started Free
+          </Button>
         </div>
       </div>
     </div>
