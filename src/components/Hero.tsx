@@ -8,7 +8,7 @@ interface HeroProps {
 
 export const Hero = ({ onGetStarted }: HeroProps) => {
   return (
-    <div className="min-h-screen gradient-warm relative overflow-hidden">
+    <div className="min-h-screen gradient-warm relative overflow-hidden pt-16">
       <MemoryBubbles />
       
       <div className="relative z-10 max-w-6xl mx-auto px-4 py-20">

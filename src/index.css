@@ -134,4 +134,44 @@ All colors MUST be HSL.
     background-clip: text;
     -webkit-text-fill-color: transparent;
   }
+
+  .gradient-card {
+    background: linear-gradient(135deg, hsl(var(--card)) 0%, hsl(var(--card) / 0.8) 100%);
+  }
+
+  /* Glassmorphism */
+  .glass {
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  /* Neumorphism Light */
+  .neomorph-light {
+    background: hsl(var(--background));
+    box-shadow: 8px 8px 16px hsl(var(--muted)), -8px -8px 16px hsl(var(--card));
+  }
+
+  /* Neumorphism Dark */
+  .dark .neomorph-dark {
+    background: hsl(var(--background));
+    box-shadow: 8px 8px 16px rgba(0, 0, 0, 0.4), -8px -8px 16px rgba(255, 255, 255, 0.02);
+  }
+
+  /* Scroll animations */
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fadeInUp {
+    animation: fadeInUp 0.6s ease-out;
+  }
 }

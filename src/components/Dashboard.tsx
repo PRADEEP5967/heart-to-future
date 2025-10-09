@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,6 +11,7 @@ import { ThemeToggle } from "./ThemeToggle";
 import { ViewCapsule } from "./ViewCapsule";
 import { Profile } from "./Profile";
 import { MemoryBubbles } from "./MemoryBubbles";
+import { GlassCard } from "./GlassCard";
 
 interface Capsule {
   id: string;
@@ -110,42 +112,60 @@ export const Dashboard = ({ onCreateCapsule, onLogout }: DashboardProps) => {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="p-6 shadow-card gradient-card border-2">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-primary/20">
-                <Lock className="w-6 h-6 text-primary" />
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            <GlassCard className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-full bg-gradient-to-br from-primary to-primary/50">
+                  <Lock className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-3xl font-bold">{activeCapsules.length}</p>
+                  <p className="text-sm text-muted-foreground">Sealed Capsules</p>
+                </div>
               </div>
-              <div>
-                <p className="text-3xl font-bold">{activeCapsules.length}</p>
-                <p className="text-sm text-muted-foreground">Sealed Capsules</p>
-              </div>
-            </div>
-          </Card>
+            </GlassCard>
+          </motion.div>
 
-          <Card className="p-6 shadow-card gradient-card border-2">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-accent/20">
-                <Unlock className="w-6 h-6 text-accent" />
+          <motion.div
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            <GlassCard className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-full bg-gradient-to-br from-accent to-accent/50">
+                  <Unlock className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <p className="text-3xl font-bold">{openedCapsules.length}</p>
+                  <p className="text-sm text-muted-foreground">Opened Capsules</p>
+                </div>
               </div>
-              <div>
-                <p className="text-3xl font-bold">{openedCapsules.length}</p>
-                <p className="text-sm text-muted-foreground">Opened Capsules</p>
-              </div>
-            </div>
-          </Card>
+            </GlassCard>
+          </motion.div>
 
-          <Card className="p-6 shadow-card gradient-card border-2">
-            <div className="flex items-center gap-3">
-              <div className="p-3 rounded-full bg-secondary/20">
-                <Target className="w-6 h-6 text-primary" />
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 }}
+          >
+            <GlassCard className="p-6">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-full bg-gradient-to-br from-secondary to-secondary/50">
+                  <Target className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1">
+                  <p className="text-3xl font-bold">{completedGoals}/{totalGoals}</p>
+                  <p className="text-sm text-muted-foreground mb-2">Goals Achieved</p>
+                  <Progress value={goalsProgress} className="h-2" />
+                </div>
               </div>
-              <div className="flex-1">
-                <p className="text-3xl font-bold">{completedGoals}/{totalGoals}</p>
-                <p className="text-sm text-muted-foreground mb-2">Goals Achieved</p>
-                <Progress value={goalsProgress} className="h-2" />
-              </div>
-            </div>
-          </Card>
+            </GlassCard>
+          </motion.div>
         </div>
 
         {/* Create Button */}

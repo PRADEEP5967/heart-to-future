@@ -1,58 +1,29 @@
-import { useState, useEffect } from "react";
-import { Auth } from "@/components/Auth";
-import { Dashboard } from "@/components/Dashboard";
-import { CreateCapsule } from "@/components/CreateCapsule";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Hero } from "@/components/Hero";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
 import { auth } from "@/lib/auth";
 
-type View = "hero" | "auth" | "dashboard" | "create";
-
 const Index = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [currentView, setCurrentView] = useState<View>("hero");
+  const navigate = useNavigate();
 
   useEffect(() => {
     const user = auth.getUser();
     if (user) {
-      setIsAuthenticated(true);
-      setCurrentView("dashboard");
+      navigate("/dashboard");
     }
-  }, []);
-
-  const handleAuthSuccess = () => {
-    setIsAuthenticated(true);
-    setCurrentView("dashboard");
-  };
-
-  const handleLogout = () => {
-    auth.logout();
-    setIsAuthenticated(false);
-    setCurrentView("hero");
-  };
+  }, [navigate]);
 
   const handleGetStarted = () => {
-    setCurrentView("auth");
+    navigate("/auth");
   };
-
-  if (currentView === "hero") {
-    return <Hero onGetStarted={handleGetStarted} />;
-  }
-
-  if (!isAuthenticated || currentView === "auth") {
-    return <Auth onAuthSuccess={handleAuthSuccess} />;
-  }
 
   return (
     <>
-      {currentView === "dashboard" && (
-        <Dashboard
-          onCreateCapsule={() => setCurrentView("create")}
-          onLogout={handleLogout}
-        />
-      )}
-      {currentView === "create" && (
-        <CreateCapsule onBack={() => setCurrentView("dashboard")} />
-      )}
+      <Navbar />
+      <Hero onGetStarted={handleGetStarted} />
+      <Footer />
     </>
   );
 };
