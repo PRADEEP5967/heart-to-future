@@ -13,6 +13,7 @@ interface AuthProps {
   onAuthSuccess: () => void;
 }
 
+
 export const Auth = ({ onAuthSuccess }: AuthProps) => {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
