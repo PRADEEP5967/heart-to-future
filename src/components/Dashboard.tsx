@@ -5,13 +5,14 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Plus, LogOut, Calendar, Target, Lock, Unlock, User, Settings, Mic } from "lucide-react";
+import { Sparkles, Plus, LogOut, Calendar as CalendarIconImport, Target, Lock, Unlock, User, Settings, Mic } from "lucide-react";
 import { auth, User as AuthUser } from "@/lib/auth";
 import { ThemeToggle } from "./ThemeToggle";
 import { ViewCapsule } from "./ViewCapsule";
 import { Profile } from "./Profile";
 import { MemoryBubbles } from "./MemoryBubbles";
 import { GlassCard } from "./GlassCard";
+import { CapsuleCalendar } from "./CapsuleCalendar";
 
 interface Capsule {
   id: string;
@@ -23,6 +24,7 @@ interface Capsule {
   isGoal: boolean;
   voiceNote?: string;
   createdAt: string;
+  theme?: "modern" | "vintage" | "minimalist" | "cosmic";
 }
 
 interface Goal {
@@ -180,9 +182,10 @@ export const Dashboard = ({ onCreateCapsule, onLogout }: DashboardProps) => {
 
         {/* Tabs */}
         <Tabs defaultValue="active" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-6">
+          <TabsList className="grid w-full grid-cols-4 mb-6">
             <TabsTrigger value="active">Active</TabsTrigger>
             <TabsTrigger value="opened">Delivered</TabsTrigger>
+            <TabsTrigger value="calendar">Calendar</TabsTrigger>
             <TabsTrigger value="drafts">Drafts</TabsTrigger>
           </TabsList>
 
@@ -204,8 +207,13 @@ export const Dashboard = ({ onCreateCapsule, onLogout }: DashboardProps) => {
                         className="p-5 bg-muted/20 rounded-lg border-2 flex justify-between items-center transition-smooth hover:shadow-card"
                       >
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
+                          <div className="flex items-center gap-2 mb-1 flex-wrap">
                             <h3 className="text-lg font-semibold">{capsule.title}</h3>
+                            {capsule.theme && (
+                              <Badge variant="outline" className="text-xs capitalize">
+                                {capsule.theme}
+                              </Badge>
+                            )}
                             {capsule.isGoal && (
                               <Badge variant="secondary" className="text-xs">
                                 <Target className="w-3 h-3 mr-1" />
@@ -220,7 +228,7 @@ export const Dashboard = ({ onCreateCapsule, onLogout }: DashboardProps) => {
                             )}
                           </div>
                           <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
-                            <Calendar className="w-4 h-4" />
+                            <CalendarIconImport className="w-4 h-4" />
                             Opens on {new Date(capsule.openDate).toLocaleDateString()}
                           </p>
                         </div>
@@ -268,6 +276,19 @@ export const Dashboard = ({ onCreateCapsule, onLogout }: DashboardProps) => {
                 </div>
               )}
             </Card>
+          </TabsContent>
+
+          <TabsContent value="calendar">
+            <CapsuleCalendar 
+              capsules={capsules} 
+              onCapsuleClick={(capsule) => {
+                if (capsule.status === "sealed" && new Date(capsule.openDate) <= new Date()) {
+                  openCapsule(capsule);
+                } else {
+                  setSelectedCapsule(capsule);
+                }
+              }} 
+            />
           </TabsContent>
 
           <TabsContent value="drafts">

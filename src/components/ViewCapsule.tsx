@@ -3,9 +3,33 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Sparkles, Target } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Sparkles, Target, Palette } from "lucide-react";
 import { decryptData } from "@/lib/encryption";
 import confetti from "canvas-confetti";
+
+const THEME_STYLES = {
+  modern: {
+    gradient: "from-blue-500/10 to-cyan-500/10",
+    border: "border-blue-500/30",
+    accent: "text-blue-600 dark:text-blue-400",
+  },
+  vintage: {
+    gradient: "from-amber-600/10 to-orange-700/10",
+    border: "border-amber-600/30",
+    accent: "text-amber-700 dark:text-amber-400",
+  },
+  minimalist: {
+    gradient: "from-slate-500/10 to-gray-600/10",
+    border: "border-slate-500/30",
+    accent: "text-slate-700 dark:text-slate-300",
+  },
+  cosmic: {
+    gradient: "from-purple-600/10 to-pink-600/10",
+    border: "border-purple-600/30",
+    accent: "text-purple-600 dark:text-purple-400",
+  },
+};
 
 interface Goal {
   id: string;
@@ -21,6 +45,7 @@ interface Capsule {
   isGoal: boolean;
   voiceNote?: string;
   createdAt: string;
+  theme?: "modern" | "vintage" | "minimalist" | "cosmic";
 }
 
 interface ViewCapsuleProps {
@@ -108,6 +133,9 @@ export const ViewCapsule = ({ capsule, onBack }: ViewCapsuleProps) => {
     );
   }
 
+  const theme = capsule.theme || "modern";
+  const themeStyle = THEME_STYLES[theme];
+
   return (
     <div className="min-h-screen gradient-warm px-4 py-12">
       <div className="max-w-3xl mx-auto space-y-6 animate-fade-in">
@@ -120,19 +148,25 @@ export const ViewCapsule = ({ capsule, onBack }: ViewCapsuleProps) => {
           Back to Dashboard
         </Button>
 
-        <Card className="p-8 shadow-card gradient-card border-2">
+        <Card className={`p-8 shadow-card border-2 bg-gradient-to-br ${themeStyle.gradient}`}>
           <div className="space-y-6">
             <div>
-              <h1 className="text-4xl font-bold text-gradient mb-2">
-                {capsule.title}
-              </h1>
+              <div className="flex items-center gap-3 mb-2">
+                <h1 className="text-4xl font-bold text-gradient">
+                  {capsule.title}
+                </h1>
+                <Badge variant="secondary" className="capitalize">
+                  <Palette className="w-3 h-3 mr-1" />
+                  {theme}
+                </Badge>
+              </div>
               <p className="text-muted-foreground">
                 Created on {new Date(capsule.createdAt).toLocaleDateString()}
               </p>
             </div>
 
             <div className="prose prose-lg max-w-none">
-              <div className="bg-muted/30 p-6 rounded-lg border-2 font-handwritten text-lg leading-relaxed whitespace-pre-wrap">
+              <div className={`bg-card/50 p-6 rounded-lg border-2 ${themeStyle.border} font-handwritten text-lg leading-relaxed whitespace-pre-wrap`}>
                 {decryptedMessage}
               </div>
             </div>

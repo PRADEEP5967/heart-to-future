@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ArrowLeft, Send, Mic, MicOff, Plus, X, Target, Sparkles, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Send, Mic, MicOff, Plus, X, Target, Sparkles, Loader2, Palette } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { auth } from "@/lib/auth";
@@ -22,6 +23,7 @@ interface CapsuleData {
   openDate: string;
   isGoal: boolean;
   voiceNote?: string;
+  theme: "modern" | "vintage" | "minimalist" | "cosmic";
 }
 
 interface Goal {
@@ -35,6 +37,7 @@ export const CreateCapsule = ({ onBack }: CreateCapsuleProps) => {
     message: "",
     openDate: "",
     isGoal: false,
+    theme: "modern",
   });
   const [goals, setGoals] = useState<Goal[]>([]);
   const [newGoalTitle, setNewGoalTitle] = useState("");
@@ -164,7 +167,7 @@ export const CreateCapsule = ({ onBack }: CreateCapsuleProps) => {
         description: `Your message will be unlocked on ${new Date(capsule.openDate).toLocaleDateString()}.`,
       });
 
-      setCapsule({ title: "", message: "", openDate: "", isGoal: false });
+      setCapsule({ title: "", message: "", openDate: "", isGoal: false, theme: "modern" });
       setGoals([]);
       clearRecording();
       onBack();
@@ -315,6 +318,67 @@ export const CreateCapsule = ({ onBack }: CreateCapsuleProps) => {
                     </Button>
                   </div>
                 )}
+              </div>
+            </div>
+
+            {/* Theme Selection */}
+            <div className="space-y-3 p-4 bg-muted/30 rounded-lg border-2">
+              <Label className="text-base font-semibold flex items-center gap-2">
+                <Palette className="w-4 h-4" />
+                Choose a Theme
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Select a visual style for your time capsule
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-3">
+                {[
+                  { 
+                    name: "modern" as const, 
+                    label: "Modern", 
+                    gradient: "from-blue-500 to-cyan-500",
+                    description: "Clean & contemporary"
+                  },
+                  { 
+                    name: "vintage" as const, 
+                    label: "Vintage", 
+                    gradient: "from-amber-600 to-orange-700",
+                    description: "Nostalgic & warm"
+                  },
+                  { 
+                    name: "minimalist" as const, 
+                    label: "Minimalist", 
+                    gradient: "from-slate-500 to-gray-600",
+                    description: "Simple & elegant"
+                  },
+                  { 
+                    name: "cosmic" as const, 
+                    label: "Cosmic", 
+                    gradient: "from-purple-600 to-pink-600",
+                    description: "Dreamy & mystical"
+                  },
+                ].map((theme) => (
+                  <button
+                    key={theme.name}
+                    type="button"
+                    onClick={() => setCapsule({ ...capsule, theme: theme.name })}
+                    className={`
+                      p-4 rounded-xl border-2 transition-all hover:scale-105
+                      ${capsule.theme === theme.name 
+                        ? `border-primary shadow-soft scale-105` 
+                        : `border-border hover:border-primary/50`
+                      }
+                    `}
+                  >
+                    <div className={`w-full h-12 rounded-lg bg-gradient-to-br ${theme.gradient} mb-3`} />
+                    <p className="font-semibold text-sm">{theme.label}</p>
+                    <p className="text-xs text-muted-foreground mt-1">{theme.description}</p>
+                    {capsule.theme === theme.name && (
+                      <Badge variant="secondary" className="mt-2 w-full">
+                        Selected
+                      </Badge>
+                    )}
+                  </button>
+                ))}
               </div>
             </div>
 
