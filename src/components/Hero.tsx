@@ -1,6 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Sparkles, Mail, Clock, Heart, Shield } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Sparkles, Mail, Clock, Heart, Shield, FileText, Calendar, Eye, Palette } from "lucide-react";
 import { MemoryBubbles } from "./MemoryBubbles";
+import { Link } from "react-router-dom";
 
 interface HeroProps {
   onGetStarted: () => void;
@@ -36,49 +38,73 @@ export const Hero = ({ onGetStarted }: HeroProps) => {
             <Sparkles className="w-6 h-6 mr-3" />
             Start Your Journey
           </Button>
+
+          <div className="flex justify-center gap-2 flex-wrap mt-6">
+            <Badge variant="secondary" className="text-sm py-2 px-4">
+              ✨ Templates Included
+            </Badge>
+            <Badge variant="secondary" className="text-sm py-2 px-4">
+              🔒 End-to-End Encrypted
+            </Badge>
+            <Badge variant="secondary" className="text-sm py-2 px-4">
+              📅 Timeline View
+            </Badge>
+            <Badge variant="secondary" className="text-sm py-2 px-4">
+              👁️ Preview Mode
+            </Badge>
+          </div>
         </div>
 
         {/* Features Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-20">
           <div className="p-6 bg-card/80 backdrop-blur rounded-2xl border-2 shadow-card transition-smooth hover:shadow-soft hover:scale-105">
             <div className="p-3 bg-primary/10 rounded-full w-fit mb-4">
-              <Mail className="w-8 h-8 text-primary" />
+              <FileText className="w-8 h-8 text-primary" />
             </div>
-            <h3 className="text-xl font-bold mb-2">Write Letters</h3>
+            <h3 className="text-xl font-bold mb-2">Smart Templates</h3>
             <p className="text-muted-foreground">
-              Pen heartfelt messages to your future self with our beautiful editor.
+              Pre-filled prompts for gratitude, goals, and life milestones to inspire you.
             </p>
           </div>
 
           <div className="p-6 bg-card/80 backdrop-blur rounded-2xl border-2 shadow-card transition-smooth hover:shadow-soft hover:scale-105">
             <div className="p-3 bg-accent/10 rounded-full w-fit mb-4">
-              <Clock className="w-8 h-8 text-accent" />
+              <Calendar className="w-8 h-8 text-accent" />
             </div>
-            <h3 className="text-xl font-bold mb-2">Time Lock</h3>
+            <h3 className="text-xl font-bold mb-2">Timeline View</h3>
             <p className="text-muted-foreground">
-              Set when your capsule opens - 1 month, 1 year, or even 10 years from now.
+              Visualize your journey with a beautiful chronological timeline of all capsules.
             </p>
           </div>
 
           <div className="p-6 bg-card/80 backdrop-blur rounded-2xl border-2 shadow-card transition-smooth hover:shadow-soft hover:scale-105">
             <div className="p-3 bg-secondary/10 rounded-full w-fit mb-4">
-              <Heart className="w-8 h-8 text-primary" />
+              <Eye className="w-8 h-8 text-primary" />
             </div>
-            <h3 className="text-xl font-bold mb-2">Voice Notes</h3>
+            <h3 className="text-xl font-bold mb-2">Preview Mode</h3>
             <p className="text-muted-foreground">
-              Record voice messages to hear your past self speak to you.
+              Peek at locked capsules with blurred previews without opening them.
             </p>
           </div>
 
           <div className="p-6 bg-card/80 backdrop-blur rounded-2xl border-2 shadow-card transition-smooth hover:shadow-soft hover:scale-105">
             <div className="p-3 bg-primary/10 rounded-full w-fit mb-4">
-              <Shield className="w-8 h-8 text-primary" />
+              <Palette className="w-8 h-8 text-primary" />
             </div>
-            <h3 className="text-xl font-bold mb-2">Private & Secure</h3>
+            <h3 className="text-xl font-bold mb-2">Custom Themes</h3>
             <p className="text-muted-foreground">
-              Your messages are encrypted and only you can read them.
+              Choose from modern, vintage, minimalist, or cosmic visual styles.
             </p>
           </div>
+        </div>
+
+        {/* Features Link */}
+        <div className="mt-12 text-center">
+          <Link to="/features">
+            <Button variant="outline" size="lg" className="rounded-full">
+              Explore All Features →
+            </Button>
+          </Link>
         </div>
 
         {/* CTA Section */}

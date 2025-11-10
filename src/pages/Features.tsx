@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Mail, Clock, Heart, Shield, Target, Sparkles, Mic, Brain, Lock, Zap } from "lucide-react";
+import { Mail, Clock, Heart, Shield, Target, Sparkles, Mic, Brain, Lock, Zap, FileText, Calendar, Eye, Palette, Upload, Image } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
@@ -8,52 +8,76 @@ import { Footer } from "@/components/Footer";
 
 const features = [
   {
-    icon: Mail,
-    title: "Write Letters",
-    description: "Pen heartfelt messages to your future self with our beautiful, distraction-free editor.",
+    icon: FileText,
+    title: "Smart Templates",
+    description: "Choose from pre-filled templates for gratitude journals, goal setting, and life milestones to inspire your writing.",
     gradient: "from-primary to-secondary",
+  },
+  {
+    icon: Calendar,
+    title: "Timeline View",
+    description: "Visualize all your capsules on a beautiful chronological timeline showing your journey through time.",
+    gradient: "from-accent to-primary",
+  },
+  {
+    icon: Eye,
+    title: "Preview Mode",
+    description: "View blurred previews of locked capsules without opening them - peek at what's waiting for you.",
+    gradient: "from-secondary to-primary",
+  },
+  {
+    icon: Palette,
+    title: "Custom Themes",
+    description: "Personalize each capsule with modern, vintage, minimalist, or cosmic visual styles.",
+    gradient: "from-primary to-accent",
+  },
+  {
+    icon: Upload,
+    title: "File Attachments",
+    description: "Attach photos, documents, and files to your capsules - all encrypted and secure.",
+    gradient: "from-accent to-secondary",
+  },
+  {
+    icon: Mail,
+    title: "Beautiful Editor",
+    description: "Write with our distraction-free editor featuring auto-save and character limits.",
+    gradient: "from-secondary to-accent",
   },
   {
     icon: Clock,
     title: "Time Lock",
     description: "Set when your capsule opens - 1 month, 1 year, or even 10 years from now.",
-    gradient: "from-accent to-primary",
+    gradient: "from-primary to-secondary",
   },
   {
     icon: Mic,
     title: "Voice Notes",
     description: "Record voice messages to hear your past self speak to you in the future.",
-    gradient: "from-secondary to-primary",
+    gradient: "from-accent to-primary",
   },
   {
     icon: Shield,
-    title: "Private & Secure",
-    description: "Your messages are encrypted end-to-end. Only you can read them.",
-    gradient: "from-primary to-accent",
+    title: "End-to-End Encryption",
+    description: "Your messages and files are encrypted. Only you can read them - complete privacy guaranteed.",
+    gradient: "from-secondary to-primary",
   },
   {
     icon: Target,
     title: "Goal Tracking",
     description: "Turn your capsules into goal lists and track your achievements over time.",
-    gradient: "from-accent to-secondary",
-  },
-  {
-    icon: Brain,
-    title: "AI Reflections",
-    description: "Get thoughtful AI-generated reflections from your future self.",
-    gradient: "from-secondary to-accent",
+    gradient: "from-primary to-accent",
   },
   {
     icon: Lock,
     title: "Auto-Save Drafts",
     description: "Never lose your thoughts. We automatically save your drafts as you write.",
-    gradient: "from-primary to-secondary",
+    gradient: "from-accent to-secondary",
   },
   {
-    icon: Zap,
-    title: "Instant Notifications",
-    description: "Get notified when it's time to open your time capsules.",
-    gradient: "from-accent to-primary",
+    icon: Image,
+    title: "Calendar View",
+    description: "See all your capsules organized in a beautiful interactive calendar with color coding.",
+    gradient: "from-secondary to-accent",
   },
 ];
 
