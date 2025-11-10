@@ -6,12 +6,13 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Send, Mic, MicOff, Plus, X, Target, Sparkles, Loader2, Palette } from "lucide-react";
+import { ArrowLeft, Send, Mic, MicOff, Plus, X, Target, Sparkles, Loader2, Palette, FileText, Upload, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAudioRecorder } from "@/hooks/useAudioRecorder";
 import { auth } from "@/lib/auth";
 import { encryptData } from "@/lib/encryption";
 import { TypeAnimation } from 'react-type-animation';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface CreateCapsuleProps {
   onBack: () => void;
@@ -24,7 +25,27 @@ interface CapsuleData {
   isGoal: boolean;
   voiceNote?: string;
   theme: "modern" | "vintage" | "minimalist" | "cosmic";
+  files?: Array<{ name: string; data: string; type: string }>;
 }
+
+const TEMPLATES = {
+  gratitude: {
+    title: "My Gratitude Journal",
+    message: "Dear Future Me,\n\nToday I am grateful for:\n\n1. \n2. \n3. \n\nThree things that made me smile today:\n\n\n\nWhat I learned about myself:\n\n\n\nWith love and gratitude,\nPresent Me",
+  },
+  goals: {
+    title: "My Goals & Dreams",
+    message: "Dear Future Me,\n\nBy the time you read this, I hope to have achieved:\n\n🎯 Career Goals:\n\n\n💪 Personal Growth:\n\n\n❤️ Relationships:\n\n\n🌟 Dreams:\n\n\n\nI believe in you!\nPresent Me",
+  },
+  milestone: {
+    title: "Life Milestone Celebration",
+    message: "Dear Future Me,\n\nToday marks an important moment in my journey:\n\nWhat happened:\n\n\nHow I feel:\n\n\nWho was there:\n\n\nWhat I want to remember:\n\n\nMy hopes for the future:\n\n\n\nCheers to this moment!\nPresent Me",
+  },
+  custom: {
+    title: "",
+    message: "",
+  },
+};
 
 interface Goal {
   id: string;
@@ -38,10 +59,12 @@ export const CreateCapsule = ({ onBack }: CreateCapsuleProps) => {
     openDate: "",
     isGoal: false,
     theme: "modern",
+    files: [],
   });
   const [goals, setGoals] = useState<Goal[]>([]);
   const [newGoalTitle, setNewGoalTitle] = useState("");
   const [isSaving, setIsSaving] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<keyof typeof TEMPLATES>("custom");
   const { toast } = useToast();
   const {
     isRecording,
@@ -88,6 +111,54 @@ export const CreateCapsule = ({ onBack }: CreateCapsuleProps) => {
 
   const removeGoal = (id: string) => {
     setGoals(goals.filter((g) => g.id !== id));
+  };
+
+  const handleTemplateChange = (template: keyof typeof TEMPLATES) => {
+    setSelectedTemplate(template);
+    if (template !== "custom") {
+      setCapsule({
+        ...capsule,
+        title: TEMPLATES[template].title,
+        message: TEMPLATES[template].message,
+      });
+    }
+  };
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    Array.from(files).forEach((file) => {
+      if (file.size > 10 * 1024 * 1024) {
+        toast({
+          title: "File too large",
+          description: "Files must be under 10MB",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const fileData = {
+          name: file.name,
+          data: encryptData(event.target?.result as string),
+          type: file.type,
+        };
+        setCapsule((prev) => ({
+          ...prev,
+          files: [...(prev.files || []), fileData],
+        }));
+      };
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const removeFile = (index: number) => {
+    setCapsule((prev) => ({
+      ...prev,
+      files: prev.files?.filter((_, i) => i !== index),
+    }));
   };
 
   const handleSave = async () => {
@@ -167,8 +238,9 @@ export const CreateCapsule = ({ onBack }: CreateCapsuleProps) => {
         description: `Your message will be unlocked on ${new Date(capsule.openDate).toLocaleDateString()}.`,
       });
 
-      setCapsule({ title: "", message: "", openDate: "", isGoal: false, theme: "modern" });
+      setCapsule({ title: "", message: "", openDate: "", isGoal: false, theme: "modern", files: [] });
       setGoals([]);
+      setSelectedTemplate("custom");
       clearRecording();
       onBack();
     } catch (error) {
@@ -208,6 +280,29 @@ export const CreateCapsule = ({ onBack }: CreateCapsuleProps) => {
               <p className="text-muted-foreground">
                 Write a message to your future self. What do you hope to remember? What dreams do you have?
               </p>
+            </div>
+
+            <div className="space-y-3 p-4 bg-muted/30 rounded-lg border-2">
+              <Label className="text-base font-semibold flex items-center gap-2">
+                <FileText className="w-4 h-4" />
+                Choose a Template (Optional)
+              </Label>
+              <Select value={selectedTemplate} onValueChange={handleTemplateChange}>
+                <SelectTrigger className="border-2">
+                  <SelectValue placeholder="Select a template" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="custom">✨ Start from Scratch</SelectItem>
+                  <SelectItem value="gratitude">🙏 Gratitude Journal</SelectItem>
+                  <SelectItem value="goals">🎯 Goal Setting</SelectItem>
+                  <SelectItem value="milestone">🌟 Life Milestone</SelectItem>
+                </SelectContent>
+              </Select>
+              {selectedTemplate !== "custom" && (
+                <p className="text-sm text-muted-foreground">
+                  Template loaded! Feel free to customize it.
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -277,6 +372,63 @@ export const CreateCapsule = ({ onBack }: CreateCapsuleProps) => {
                 onChange={(e) => setCapsule({ ...capsule, openDate: e.target.value })}
                 className="text-lg border-2 focus:ring-2 focus:ring-primary/20"
               />
+            </div>
+
+            {/* File Attachments */}
+            <div className="space-y-3 p-4 bg-muted/30 rounded-lg border-2">
+              <Label className="text-base font-semibold flex items-center gap-2">
+                <Upload className="w-4 h-4" />
+                Attach Photos & Files (Optional)
+              </Label>
+              <p className="text-sm text-muted-foreground">
+                Add photos, documents, or any files to your capsule (max 10MB each)
+              </p>
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => document.getElementById("file-upload")?.click()}
+                  className="flex-1"
+                >
+                  <Upload className="w-4 h-4 mr-2" />
+                  Choose Files
+                </Button>
+                <input
+                  id="file-upload"
+                  type="file"
+                  multiple
+                  accept="image/*,.pdf,.doc,.docx,.txt"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </div>
+              {capsule.files && capsule.files.length > 0 && (
+                <div className="space-y-2">
+                  {capsule.files.map((file, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-2 bg-background rounded-lg border"
+                    >
+                      <div className="flex items-center gap-2">
+                        {file.type.startsWith("image/") ? (
+                          <ImageIcon className="w-4 h-4 text-primary" />
+                        ) : (
+                          <FileText className="w-4 h-4 text-primary" />
+                        )}
+                        <span className="text-sm truncate max-w-[200px]">{file.name}</span>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeFile(index)}
+                      >
+                        <X className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Voice Recording */}

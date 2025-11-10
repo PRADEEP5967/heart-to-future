@@ -4,7 +4,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Sparkles, Target, Palette } from "lucide-react";
+import { ArrowLeft, Sparkles, Target, Palette, Download, FileText, Image as ImageIcon } from "lucide-react";
 import { decryptData } from "@/lib/encryption";
 import confetti from "canvas-confetti";
 
@@ -46,6 +46,7 @@ interface Capsule {
   voiceNote?: string;
   createdAt: string;
   theme?: "modern" | "vintage" | "minimalist" | "cosmic";
+  files?: Array<{ name: string; data: string; type: string }>;
 }
 
 interface ViewCapsuleProps {
@@ -175,6 +176,53 @@ export const ViewCapsule = ({ capsule, onBack }: ViewCapsuleProps) => {
               <div className="space-y-2">
                 <h3 className="text-lg font-semibold">Your Voice Note</h3>
                 <audio controls className="w-full" src={capsule.voiceNote} />
+              </div>
+            )}
+
+            {capsule.files && capsule.files.length > 0 && (
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  Attached Files
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {capsule.files.map((file, index) => {
+                    const decryptedData = decryptData(file.data);
+                    return (
+                      <Card key={index} className="p-4 hover:shadow-lg transition-shadow">
+                        <div className="flex items-center justify-between mb-2">
+                          <div className="flex items-center gap-3 flex-1 min-w-0">
+                            {file.type.startsWith("image/") ? (
+                              <ImageIcon className="w-5 h-5 text-primary flex-shrink-0" />
+                            ) : (
+                              <FileText className="w-5 h-5 text-primary flex-shrink-0" />
+                            )}
+                            <span className="text-sm truncate">{file.name}</span>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              const link = document.createElement("a");
+                              link.href = decryptedData;
+                              link.download = file.name;
+                              link.click();
+                            }}
+                          >
+                            <Download className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        {file.type.startsWith("image/") && (
+                          <img
+                            src={decryptedData}
+                            alt={file.name}
+                            className="rounded-lg w-full h-32 object-cover"
+                          />
+                        )}
+                      </Card>
+                    );
+                  })}
+                </div>
               </div>
             )}
 

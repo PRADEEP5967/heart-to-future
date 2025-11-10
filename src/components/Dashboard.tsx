@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Plus, LogOut, Calendar as CalendarIconImport, Target, Lock, Unlock, User, Settings, Mic } from "lucide-react";
+import { Sparkles, Plus, LogOut, Calendar as CalendarIconImport, Target, Lock, Unlock, User, Settings, Mic, Clock } from "lucide-react";
 import { auth, User as AuthUser } from "@/lib/auth";
 import { ThemeToggle } from "./ThemeToggle";
 import { ViewCapsule } from "./ViewCapsule";
@@ -13,6 +13,8 @@ import { Profile } from "./Profile";
 import { MemoryBubbles } from "./MemoryBubbles";
 import { GlassCard } from "./GlassCard";
 import { CapsuleCalendar } from "./CapsuleCalendar";
+import { Timeline } from "./Timeline";
+import { CapsulePreview } from "./CapsulePreview";
 
 interface Capsule {
   id: string;
@@ -25,6 +27,7 @@ interface Capsule {
   voiceNote?: string;
   createdAt: string;
   theme?: "modern" | "vintage" | "minimalist" | "cosmic";
+  files?: Array<{ name: string; data: string; type: string }>;
 }
 
 interface Goal {
@@ -42,6 +45,7 @@ interface DashboardProps {
 export const Dashboard = ({ onCreateCapsule, onLogout }: DashboardProps) => {
   const [capsules, setCapsules] = useState<Capsule[]>([]);
   const [selectedCapsule, setSelectedCapsule] = useState<Capsule | null>(null);
+  const [previewCapsule, setPreviewCapsule] = useState<Capsule | null>(null);
   const [showProfile, setShowProfile] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
 
@@ -182,10 +186,11 @@ export const Dashboard = ({ onCreateCapsule, onLogout }: DashboardProps) => {
 
         {/* Tabs */}
         <Tabs defaultValue="active" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
+          <TabsList className="grid w-full grid-cols-5 mb-6">
             <TabsTrigger value="active">Active</TabsTrigger>
             <TabsTrigger value="opened">Delivered</TabsTrigger>
             <TabsTrigger value="calendar">Calendar</TabsTrigger>
+            <TabsTrigger value="timeline">Timeline</TabsTrigger>
             <TabsTrigger value="drafts">Drafts</TabsTrigger>
           </TabsList>
 
@@ -291,6 +296,20 @@ export const Dashboard = ({ onCreateCapsule, onLogout }: DashboardProps) => {
             />
           </TabsContent>
 
+          <TabsContent value="timeline">
+            <Timeline
+              capsules={capsules}
+              onViewCapsule={(capsule) => {
+                if (capsule.status === "sealed" && new Date(capsule.openDate) <= new Date()) {
+                  openCapsule(capsule);
+                } else {
+                  setSelectedCapsule(capsule);
+                }
+              }}
+              onPreviewCapsule={setPreviewCapsule}
+            />
+          </TabsContent>
+
           <TabsContent value="drafts">
             <Card className="p-6 shadow-card gradient-card border-2">
               <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
@@ -314,6 +333,13 @@ export const Dashboard = ({ onCreateCapsule, onLogout }: DashboardProps) => {
           </TabsContent>
         </Tabs>
       </div>
+
+      {previewCapsule && (
+        <CapsulePreview
+          capsule={previewCapsule}
+          onClose={() => setPreviewCapsule(null)}
+        />
+      )}
     </div>
   );
 };
