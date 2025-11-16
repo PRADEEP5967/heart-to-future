@@ -5,7 +5,7 @@ import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Plus, LogOut, Calendar as CalendarIconImport, Target, Lock, Unlock, User, Settings, Mic, Clock } from "lucide-react";
+import { Sparkles, Plus, LogOut, Calendar as CalendarIconImport, Target, Lock, Unlock, User, Settings, Mic, Clock, Globe } from "lucide-react";
 import { auth, User as AuthUser } from "@/lib/auth";
 import { ThemeToggle } from "./ThemeToggle";
 import { ViewCapsule } from "./ViewCapsule";
@@ -15,10 +15,12 @@ import { GlassCard } from "./GlassCard";
 import { CapsuleCalendar } from "./CapsuleCalendar";
 import { Timeline } from "./Timeline";
 import { CapsulePreview } from "./CapsulePreview";
+import { CommunityFeed } from "./CommunityFeed";
 
 interface Capsule {
   id: string;
   userId: string;
+  userName?: string;
   title: string;
   message: string;
   openDate: string;
@@ -28,6 +30,10 @@ interface Capsule {
   createdAt: string;
   theme?: "modern" | "vintage" | "minimalist" | "cosmic";
   files?: Array<{ name: string; data: string; type: string }>;
+  isPublic?: boolean;
+  reactions?: Array<{ userId: string; type: string }>;
+  comments?: Array<{ id: string; userId: string; userName: string; text: string; createdAt: string }>;
+  commentsCount?: number;
 }
 
 interface Goal {
@@ -256,7 +262,7 @@ export const Dashboard = ({ onCreateCapsule, onLogout }: DashboardProps) => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="opened">
+          <TabsContent value="delivered">
             <Card className="p-6 shadow-card gradient-card border-2">
               <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
                 <Unlock className="w-6 h-6 text-accent" />

@@ -26,6 +26,7 @@ interface CapsuleData {
   voiceNote?: string;
   theme: "modern" | "vintage" | "minimalist" | "cosmic";
   files?: Array<{ name: string; data: string; type: string }>;
+  isPublic?: boolean;
 }
 
 const TEMPLATES = {
@@ -60,6 +61,7 @@ export const CreateCapsule = ({ onBack }: CreateCapsuleProps) => {
     isGoal: false,
     theme: "modern",
     files: [],
+    isPublic: false,
   });
   const [goals, setGoals] = useState<Goal[]>([]);
   const [newGoalTitle, setNewGoalTitle] = useState("");
@@ -209,10 +211,14 @@ export const CreateCapsule = ({ onBack }: CreateCapsuleProps) => {
         ...capsule,
         id: capsuleId,
         userId: user.id,
+        userName: user.displayName || user.email,
         message: encryptData(capsule.message),
         voiceNote: audioURL,
         createdAt: new Date().toISOString(),
         status: "sealed",
+        reactions: [],
+        comments: [],
+        commentsCount: 0,
       };
       
       capsules.push(newCapsule);
