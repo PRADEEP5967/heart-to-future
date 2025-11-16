@@ -4,9 +4,15 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Sparkles, Target, Palette, Download, FileText, Image as ImageIcon } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
+import { ArrowLeft, Sparkles, Target, Palette, Download, FileText, Image as ImageIcon, Heart, Globe, Lock } from "lucide-react";
 import { decryptData } from "@/lib/encryption";
 import confetti from "canvas-confetti";
+import { auth } from "@/lib/auth";
+import { CapsuleComments } from "./CapsuleComments";
+import { useToast } from "@/hooks/use-toast";
 
 const THEME_STYLES = {
   modern: {
@@ -47,6 +53,10 @@ interface Capsule {
   createdAt: string;
   theme?: "modern" | "vintage" | "minimalist" | "cosmic";
   files?: Array<{ name: string; data: string; type: string }>;
+  isPublic?: boolean;
+  reactions?: Array<{ userId: string; type: string }>;
+  comments?: Array<{ id: string; userId: string; userName: string; text: string; createdAt: string }>;
+  commentsCount?: number;
 }
 
 interface ViewCapsuleProps {
@@ -58,6 +68,9 @@ export const ViewCapsule = ({ capsule, onBack }: ViewCapsuleProps) => {
   const [isOpening, setIsOpening] = useState(true);
   const [goals, setGoals] = useState<Goal[]>([]);
   const [decryptedMessage, setDecryptedMessage] = useState("");
+  const [isPublic, setIsPublic] = useState(capsule.isPublic || false);
+  const { toast } = useToast();
+  const currentUser = auth.getUser();
 
   useEffect(() => {
     // Decrypt message
@@ -112,6 +125,62 @@ export const ViewCapsule = ({ capsule, onBack }: ViewCapsuleProps) => {
   const completedGoals = goals.filter(g => g.completed).length;
   const totalGoals = goals.length;
   const progress = totalGoals > 0 ? (completedGoals / totalGoals) * 100 : 0;
+
+  const handlePublicToggle = (checked: boolean) => {
+    const allCapsules = JSON.parse(localStorage.getItem("capsules") || "[]");
+    const updatedCapsules = allCapsules.map((c: any) => 
+      c.id === capsule.id ? { ...c, isPublic: checked } : c
+    );
+    localStorage.setItem("capsules", JSON.stringify(updatedCapsules));
+    setIsPublic(checked);
+    
+    toast({
+      title: checked ? "Capsule is now public" : "Capsule is now private",
+      description: checked 
+        ? "Your capsule will appear in the community feed" 
+        : "Your capsule has been removed from the community feed",
+    });
+  };
+
+  const handleReaction = () => {
+    if (!currentUser) return;
+
+    const allCapsules = JSON.parse(localStorage.getItem("capsules") || "[]");
+    const updatedCapsules = allCapsules.map((c: any) => {
+      if (c.id === capsule.id) {
+        const reactions = c.reactions || [];
+        const existingReaction = reactions.find((r: any) => r.userId === currentUser.id);
+        
+        if (existingReaction) {
+          return {
+            ...c,
+            reactions: reactions.filter((r: any) => r.userId !== currentUser.id),
+          };
+        } else {
+          confetti({
+            particleCount: 30,
+            spread: 40,
+            origin: { y: 0.7 },
+          });
+          return {
+            ...c,
+            reactions: [...reactions, { userId: currentUser.id, type: "heart" }],
+          };
+        }
+      }
+      return c;
+    });
+
+    localStorage.setItem("capsules", JSON.stringify(updatedCapsules));
+    capsule.reactions = updatedCapsules.find((c: any) => c.id === capsule.id)?.reactions || [];
+  };
+
+  const hasReacted = () => {
+    if (!currentUser) return false;
+    return capsule.reactions?.some(r => r.userId === currentUser.id) || false;
+  };
+
+  const reactionCount = capsule.reactions?.length || 0;
 
   if (isOpening) {
     return (
