@@ -7,7 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { ArrowLeft, Save, User, Mail, Calendar, Sparkles } from "lucide-react";
+import { ArrowLeft, Save, User, Mail, Calendar, Sparkles, Edit } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 import { auth } from "@/lib/auth";
 import { GlassCard } from "./GlassCard";
@@ -24,6 +25,7 @@ export const Profile = ({ onBack }: ProfileProps) => {
     bio: "",
   });
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const user = auth.getUser();
@@ -60,14 +62,28 @@ export const Profile = ({ onBack }: ProfileProps) => {
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
         >
-          <Button
-            variant="ghost"
-            onClick={onBack}
-            className="mb-4 hover:scale-105 transition-transform"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
-          </Button>
+          <div className="flex justify-between items-center mb-4">
+            <Button
+              variant="ghost"
+              onClick={onBack}
+              className="hover:scale-105 transition-transform"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Dashboard
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => {
+                const user = auth.getUser();
+                if (user) {
+                  navigate(`/profile/${user.id}`);
+                }
+              }}
+            >
+              <Edit className="w-4 h-4 mr-2" />
+              View Public Profile
+            </Button>
+          </div>
         </motion.div>
 
         {/* Profile Header Card */}

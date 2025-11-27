@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Heart, TrendingUp, Sparkles } from "lucide-react";
 import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 
 interface Capsule {
   id: string;
@@ -51,6 +52,7 @@ const THEME_STYLES = {
 
 export const TrendingCapsules = ({ onViewCapsule, limit = 6 }: TrendingCapsulesProps) => {
   const [trendingCapsules, setTrendingCapsules] = useState<Capsule[]>([]);
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadTrendingCapsules();
@@ -105,13 +107,25 @@ export const TrendingCapsules = ({ onViewCapsule, limit = 6 }: TrendingCapsulesP
                 onClick={() => onViewCapsule(capsule)}
               >
                 <div className="flex items-center gap-3 mb-3">
-                  <Avatar className="w-8 h-8">
+                  <Avatar 
+                    className="w-8 h-8 cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/profile/${capsule.userId}`);
+                    }}
+                  >
                     <AvatarFallback className="bg-primary/10 text-xs">
                       {capsule.userName?.[0]?.toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <p className="font-semibold text-sm truncate">
+                    <p 
+                      className="font-semibold text-sm truncate cursor-pointer hover:text-primary transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/profile/${capsule.userId}`);
+                      }}
+                    >
                       {capsule.userName || "Anonymous"}
                     </p>
                   </div>

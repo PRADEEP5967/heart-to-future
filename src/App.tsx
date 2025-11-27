@@ -14,6 +14,8 @@ import AuthPage from "./pages/AuthPage";
 import DashboardPage from "./pages/DashboardPage";
 import DiscoveryPage from "./pages/DiscoveryPage";
 import SharedCapsulePage from "./pages/SharedCapsulePage";
+import UserProfilePage from "./pages/UserProfilePage";
+import ProfileEditPage from "./pages/ProfileEditPage";
 
 const queryClient = new QueryClient();
 
@@ -34,6 +36,8 @@ const App = () => (
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/discovery" element={<DiscoveryPage />} />
           <Route path="/shared/:shareToken" element={<SharedCapsulePage />} />
+          <Route path="/profile/:userId" element={<UserProfilePage />} />
+          <Route path="/profile/edit" element={<ProfileEditPage />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
