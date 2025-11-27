@@ -16,6 +16,7 @@ import { CapsuleCalendar } from "./CapsuleCalendar";
 import { Timeline } from "./Timeline";
 import { CapsulePreview } from "./CapsulePreview";
 import { CommunityFeed } from "./CommunityFeed";
+import { TrendingCapsules } from "./TrendingCapsules";
 
 interface Capsule {
   id: string;
@@ -192,11 +193,12 @@ export const Dashboard = ({ onCreateCapsule, onLogout }: DashboardProps) => {
 
         {/* Tabs */}
         <Tabs defaultValue="active" className="w-full">
-          <TabsList className="grid w-full grid-cols-5 mb-6">
+          <TabsList className="grid w-full grid-cols-6 mb-6">
             <TabsTrigger value="active">Active</TabsTrigger>
             <TabsTrigger value="opened">Delivered</TabsTrigger>
             <TabsTrigger value="calendar">Calendar</TabsTrigger>
             <TabsTrigger value="timeline">Timeline</TabsTrigger>
+            <TabsTrigger value="community">Community</TabsTrigger>
             <TabsTrigger value="drafts">Drafts</TabsTrigger>
           </TabsList>
 
@@ -314,6 +316,11 @@ export const Dashboard = ({ onCreateCapsule, onLogout }: DashboardProps) => {
               }}
               onPreviewCapsule={setPreviewCapsule}
             />
+          </TabsContent>
+
+          <TabsContent value="community" className="mt-6 space-y-8">
+            <TrendingCapsules onViewCapsule={setPreviewCapsule} limit={6} />
+            <CommunityFeed onViewCapsule={setPreviewCapsule} />
           </TabsContent>
 
           <TabsContent value="drafts">

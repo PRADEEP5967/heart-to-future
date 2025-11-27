@@ -18,6 +18,7 @@ interface Capsule {
   createdAt: string;
   theme?: "modern" | "vintage" | "minimalist" | "cosmic";
   isPublic?: boolean;
+  isGoal: boolean;
   reactions?: Array<{ userId: string; type: string }>;
   commentsCount?: number;
 }
