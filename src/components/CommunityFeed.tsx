@@ -3,7 +3,8 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Heart, MessageCircle, Calendar, Sparkles, Lock } from "lucide-react";
+import { Heart, MessageCircle, Calendar, Sparkles, Lock, User } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { auth } from "@/lib/auth";
 import { motion } from "framer-motion";
 
@@ -53,6 +54,7 @@ const THEME_STYLES = {
 export const CommunityFeed = ({ onViewCapsule }: CommunityFeedProps) => {
   const [publicCapsules, setPublicCapsules] = useState<Capsule[]>([]);
   const currentUser = auth.getUser();
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadPublicCapsules();
@@ -150,13 +152,27 @@ export const CommunityFeed = ({ onViewCapsule }: CommunityFeedProps) => {
               >
                 {/* User Info */}
                 <div className="flex items-center gap-3 mb-4">
-                  <Avatar>
+                  <Avatar 
+                    className="cursor-pointer hover:opacity-80 transition-opacity"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(`/profile/${capsule.userId}`);
+                    }}
+                  >
                     <AvatarFallback className="bg-primary/10">
                       {capsule.userName?.[0]?.toUpperCase() || "U"}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1">
-                    <p className="font-semibold">{capsule.userName || "Anonymous"}</p>
+                    <p 
+                      className="font-semibold cursor-pointer hover:text-primary transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/profile/${capsule.userId}`);
+                      }}
+                    >
+                      {capsule.userName || "Anonymous"}
+                    </p>
                     <p className="text-sm text-muted-foreground flex items-center gap-2">
                       <Calendar className="w-3 h-3" />
                       Opened {formatDate(capsule.openDate)}
