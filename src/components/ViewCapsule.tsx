@@ -7,12 +7,14 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { ArrowLeft, Sparkles, Target, Palette, Download, FileText, Image as ImageIcon, Heart, Globe, Lock } from "lucide-react";
+import { ArrowLeft, Sparkles, Target, Palette, Download, FileText, Image as ImageIcon, Heart, Globe, Lock, Share2, Copy, Key } from "lucide-react";
 import { decryptData } from "@/lib/encryption";
 import confetti from "canvas-confetti";
 import { auth } from "@/lib/auth";
 import { CapsuleComments } from "./CapsuleComments";
 import { useToast } from "@/hooks/use-toast";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 const THEME_STYLES = {
   modern: {
@@ -57,6 +59,8 @@ interface Capsule {
   reactions?: Array<{ userId: string; type: string }>;
   comments?: Array<{ id: string; userId: string; userName: string; text: string; createdAt: string }>;
   commentsCount?: number;
+  shareToken?: string;
+  sharePassword?: string;
 }
 
 interface ViewCapsuleProps {
@@ -69,6 +73,8 @@ export const ViewCapsule = ({ capsule, onBack }: ViewCapsuleProps) => {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [decryptedMessage, setDecryptedMessage] = useState("");
   const [isPublic, setIsPublic] = useState(capsule.isPublic || false);
+  const [sharePassword, setSharePassword] = useState("");
+  const [showShareDialog, setShowShareDialog] = useState(false);
   const { toast } = useToast();
   const currentUser = auth.getUser();
 
@@ -181,6 +187,30 @@ export const ViewCapsule = ({ capsule, onBack }: ViewCapsuleProps) => {
   };
 
   const reactionCount = capsule.reactions?.length || 0;
+
+  const generateShareLink = () => {
+    if (!capsule.shareToken) {
+      // Generate unique token
+      const token = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+      const allCapsules = JSON.parse(localStorage.getItem("capsules") || "[]");
+      const updatedCapsules = allCapsules.map((c: any) => 
+        c.id === capsule.id ? { ...c, shareToken: token, sharePassword: sharePassword || undefined } : c
+      );
+      localStorage.setItem("capsules", JSON.stringify(updatedCapsules));
+      capsule.shareToken = token;
+      capsule.sharePassword = sharePassword || undefined;
+    }
+    
+    const shareUrl = `${window.location.origin}/shared/${capsule.shareToken}`;
+    navigator.clipboard.writeText(shareUrl);
+    
+    toast({
+      title: "Link copied!",
+      description: sharePassword ? "Share this link and password with someone special" : "Share this link with anyone",
+    });
+    
+    setShowShareDialog(false);
+  };
 
   if (isOpening) {
     return (
@@ -341,8 +371,108 @@ export const ViewCapsule = ({ capsule, onBack }: ViewCapsuleProps) => {
                 )}
               </div>
             )}
+
+            {/* Social Actions */}
+            <div className="flex items-center gap-3 pt-6 border-t border-border">
+              <div className="flex items-center gap-2">
+                <Switch
+                  id="public"
+                  checked={isPublic}
+                  onCheckedChange={handlePublicToggle}
+                />
+                <Label htmlFor="public" className="flex items-center gap-2 cursor-pointer">
+                  <Globe className="w-4 h-4" />
+                  Public
+                </Label>
+              </div>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                className="gap-2"
+                onClick={handleReaction}
+              >
+                <Heart
+                  className={`w-4 h-4 ${
+                    hasReacted() ? "fill-red-500 text-red-500" : ""
+                  }`}
+                />
+                {reactionCount > 0 && <span>{reactionCount}</span>}
+              </Button>
+
+              <Dialog open={showShareDialog} onOpenChange={setShowShareDialog}>
+                <DialogTrigger asChild>
+                  <Button variant="outline" size="sm" className="gap-2 ml-auto">
+                    <Share2 className="w-4 h-4" />
+                    Share
+                  </Button>
+                </DialogTrigger>
+                <DialogContent>
+                  <DialogHeader>
+                    <DialogTitle>Share This Capsule</DialogTitle>
+                    <DialogDescription>
+                      Generate a unique link to share this capsule with specific people
+                    </DialogDescription>
+                  </DialogHeader>
+                  
+                  <div className="space-y-4 pt-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="share-password" className="flex items-center gap-2">
+                        <Key className="w-4 h-4" />
+                        Password Protection (Optional)
+                      </Label>
+                      <Input
+                        id="share-password"
+                        type="text"
+                        placeholder="Enter a password to protect this link"
+                        value={sharePassword}
+                        onChange={(e) => setSharePassword(e.target.value)}
+                      />
+                      <p className="text-xs text-muted-foreground">
+                        Leave empty for a public link, or set a password for private sharing
+                      </p>
+                    </div>
+
+                    {capsule.shareToken && (
+                      <div className="p-3 bg-muted rounded-lg space-y-2">
+                        <Label className="text-xs">Share Link</Label>
+                        <div className="flex items-center gap-2">
+                          <Input
+                            readOnly
+                            value={`${window.location.origin}/shared/${capsule.shareToken}`}
+                            className="text-xs"
+                          />
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              navigator.clipboard.writeText(`${window.location.origin}/shared/${capsule.shareToken}`);
+                              toast({ title: "Link copied!" });
+                            }}
+                          >
+                            <Copy className="w-4 h-4" />
+                          </Button>
+                        </div>
+                        {capsule.sharePassword && (
+                          <p className="text-xs text-muted-foreground">
+                            Password: <span className="font-mono font-semibold">{capsule.sharePassword}</span>
+                          </p>
+                        )}
+                      </div>
+                    )}
+
+                    <Button onClick={generateShareLink} className="w-full">
+                      <Share2 className="w-4 h-4 mr-2" />
+                      {capsule.shareToken ? "Update & Copy Link" : "Generate & Copy Link"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+            </div>
           </div>
         </Card>
+
+        {isPublic && <CapsuleComments capsuleId={capsule.id} />}
       </div>
     </div>
   );
